@@ -16,6 +16,8 @@ Choose one of the options:
   7. Configure MariaDB
   8. Secure PHP installation
   9. Secure MySQL installation
+ 10. Install npm
+ 11. Install node.js
 EOF
 }
 
@@ -55,6 +57,8 @@ install() {
       secure_php;;
     9)
       secure_mariadb;;
+   10)
+      install_nodejs;;
   esac
 }
 
@@ -77,7 +81,7 @@ install_nginx_using_yum() {
 
 install_nginx_prerequisites() {
   echo '  Installing prerequisites ...'
-  packages = ('gcc' 'gcc-c++' 'make' 'zlib-devel' 'pcre-devel' 'openssl-devel')
+  packages=('gcc' 'gcc-c++' 'make' 'zlib-devel' 'pcre-devel' 'openssl-devel')
   for value in ${packages[*]}
   do
     echo "    Installing $value ..."
@@ -97,7 +101,7 @@ install_nginx_prerequisites() {
 install_nginx_without_yum() {
   nginxVersion = '1.7.7'
   nginxArchive = 'nginx-$nginxVersion.tar.gz'
-  nginxFolder = 'nginx-nginxVersion'
+  nginxFolder = 'nginx-$nginxVersion'
   echo 'Installing Nginx without yum ...'
   install_nginx_prerequisites
   if [ $? -eq 0 ]
@@ -126,8 +130,7 @@ install_nginx_without_yum() {
         sudo make install 
         if [ $? -ne 0 ]
         then
-          echo "  ${red}make install command failed.$[noc}"
-        else
+          echo "  ${red}make install command failed.${noc}"
         fi
       fi
     fi
@@ -181,8 +184,38 @@ secure_php() {
   echo "Finished securing PHP installation."
 }
 
+
+install_nodejs() {
+  ver="0.10.36"
+  echo "Installing node.js version $ver"
+  if [ -f /usr/bin/node ]
+  then
+    echo "  Uninstalling previous version of node.js ..."
+    echo "  Uninstall complete."
+  fi
+  localDir=`readlink -f ~/.local`
+  nodeInstallDir=`readlink -f ~/node-$ver-install`
+  echo "Creating $localDir and $nodeInstallDir directories ..."
+  if [ !-d $localDir ]; then
+    mkdir $localdir
+  fi
+  if [ -d $nodeInstallDir ]; then
+    rm -f -d -r -v $nodeInstallDir
+  fi
+  mkdir $nodeInstallDir
+  cd $nodeInstallDir
+  echo "  Downloading archive nodejs.org repository ..."
+  $cmd="curl -# -0 node-v$ver.tar.gz http://nodejs.org/dist/v$ver/node-v$ver.tar.gz"
+  eval $cmd
+  echo "  Download complete."
+  echo "  Unpacking archive ..."
+  tar xz --strip-components=1
+  echo "  Completed."
+  echo "  Running configure script ..."
+  ./configure --prefix=~/.local
+  echo "  Completed."
+}
+
 print_usage
 read_option
 install
-
-
