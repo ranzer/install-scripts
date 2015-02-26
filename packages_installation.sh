@@ -16,8 +16,8 @@ Choose one of the options:
   7. Configure MariaDB
   8. Secure PHP installation
   9. Secure MySQL installation
- 10. Install npm
- 11. Install node.js
+ 10. Install node.js
+ 11. Install npm
 EOF
 }
 
@@ -59,6 +59,8 @@ install() {
       secure_mariadb;;
    10)
       install_nodejs;;
+   11)
+      install_npm;;
   esac
 }
 
@@ -187,17 +189,23 @@ secure_php() {
 
 install_nodejs() {
   ver="0.10.36"
+  localDir=`readlink -f ~/local`
+  nodeInstallDir=`readlink -f ~/node-$ver-install`
   echo "Installing node.js version $ver"
   if [ -f /usr/bin/node ]
   then
     echo "  Uninstalling previous version of node.js ..."
+    if [ ! -d $localDir ]; then echo "  {red}There is no $localDir folder, aborting node uninstall.{noc}"; exit 1; fi
+    if [ ! -d $nodeInstallDir ]; then echo "  {red}There is no $nodeInstallDir folder, aborting node uninstall.{noc}"; exit 1; fi
+    cd $nodeInstallDir
+    ./configure --prefix=$localDir
+    make uninstall
     echo "  Uninstall complete."
   fi
-  localDir=`readlink -f ~/.local`
-  nodeInstallDir=`readlink -f ~/node-$ver-install`
   echo "Creating $localDir and $nodeInstallDir directories ..."
-  if [ !-d $localDir ]; then
-    mkdir $localdir
+  if [ ! -d $localDir ]; then
+    mkdir $localDir
+    cd $localDir
   fi
   if [ -d $nodeInstallDir ]; then
     rm -f -d -r -v $nodeInstallDir
@@ -205,14 +213,30 @@ install_nodejs() {
   mkdir $nodeInstallDir
   cd $nodeInstallDir
   echo "  Downloading archive nodejs.org repository ..."
-  $cmd="curl -# -0 node-v$ver.tar.gz http://nodejs.org/dist/v$ver/node-v$ver.tar.gz"
+  $cmd="curl -# -O http://nodejs.org/dist/v$ver/node-v$ver.tar.gz"
   eval $cmd
+  if [ $? -ne 0 ]; then
+    echo "  {red}Couldn't download node.js installation.{noc}"
+    exit 1
+  fi
   echo "  Download complete."
   echo "  Unpacking archive ..."
-  tar xz --strip-components=1
+  tar --strip-components=1 -xzf node-v$ver.tar.gz
   echo "  Completed."
   echo "  Running configure script ..."
   ./configure --prefix=~/.local
+  echo "  Completed."
+  echo "  Running make install ..."
+  make install
+  echo "  Completed."
+}
+
+function install_npm() {
+  echo "  Downloading npm install script ..."
+  curl -# -0 https://www.npmjs.org/install.sh
+  echo "  Completed."
+  echo "  Installing npm ..."
+  . install.sh
   echo "  Completed."
 }
 
