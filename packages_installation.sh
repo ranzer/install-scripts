@@ -252,7 +252,7 @@ install_nodejs() {
 
 function install_npm() {
   echo "  Downloading npm install script ..."
-  curl -# -0 https://www.npmjs.org/install.sh
+  curl -# -O -L https://www.npmjs.org/install.sh
   echo "  Completed."
   echo "  Installing npm ..."
   . install.sh
