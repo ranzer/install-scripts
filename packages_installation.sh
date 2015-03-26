@@ -188,20 +188,39 @@ secure_php() {
 
 
 install_nodejs() {
-  ver="0.10.36"
-  localDir=`readlink -f ~/local`
-  nodeInstallDir=`readlink -f ~/node-$ver-install`
-  echo "Installing node.js version $ver"
-  if [ -f /usr/bin/node ]
+  read -p "Enter node.js version you wish to install: " ver
+  localDir=`readlink -f ~/.local`
+  nodePath=`which node`
+  if [ $? -eq 0 ]
   then
+    currentVersion=`node -v`
+    nodeInstallDir=`readlink -f ~/node-$currentVersion-install`
     echo "  Uninstalling previous version of node.js ..."
-    if [ ! -d $localDir ]; then echo "  {red}There is no $localDir folder, aborting node uninstall.{noc}"; exit 1; fi
-    if [ ! -d $nodeInstallDir ]; then echo "  {red}There is no $nodeInstallDir folder, aborting node uninstall.{noc}"; exit 1; fi
+    if [ ! -d $localDir ]; then echo -e "  ${red}There is no $localDir folder, aborting node uninstall.${noc}"; fi
+    if [ ! -d $nodeInstallDir ]; then echo -e "  ${red}There is no $nodeInstallDir folder, aborting node uninstall.${noc}"; fi
     cd $nodeInstallDir
     ./configure --prefix=$localDir
     make uninstall
-    echo "  Uninstall complete."
+    if [ $? -ne 0 ]; then echo -e "  ${red}Make uninstall failed.${noc}"; fi
+    if [ -f $nodePath ]
+    then
+      rm $nodePath
+      if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove $nodePath.${noc}"; fi
+    fi
+    echo "  node.js uninstall completed."
+    npmPath=`which npmPath`
+    if [ $? -eq 0 ]
+    then
+      echo "  Uninstalling npm ..."
+      rm $npmPath
+      if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove npm link.${noc}"; fi
+      rm -R $localDir/lib/node_modules/npm
+      if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove npm installation.${noc}"; fi
+      echo "  npm uninstall completed."
+    fi
   fi
+  nodeInstallDir=`readlink -f ~/node-v$ver-install`
+  echo "Installing node.js version $ver"
   echo "Creating $localDir and $nodeInstallDir directories ..."
   if [ ! -d $localDir ]; then
     mkdir $localDir
@@ -213,10 +232,10 @@ install_nodejs() {
   mkdir $nodeInstallDir
   cd $nodeInstallDir
   echo "  Downloading archive nodejs.org repository ..."
-  $cmd="curl -# -O http://nodejs.org/dist/v$ver/node-v$ver.tar.gz"
+  cmd="curl -# -O http://nodejs.org/dist/v$ver/node-v$ver.tar.gz"
   eval $cmd
   if [ $? -ne 0 ]; then
-    echo "  {red}Couldn't download node.js installation.{noc}"
+    echo -e "  ${red}Couldn't download node.js installation.${noc}"
     exit 1
   fi
   echo "  Download complete."
@@ -224,7 +243,7 @@ install_nodejs() {
   tar --strip-components=1 -xzf node-v$ver.tar.gz
   echo "  Completed."
   echo "  Running configure script ..."
-  ./configure --prefix=~/.local
+  ./configure --prefix=`readlink -e ~/.local`
   echo "  Completed."
   echo "  Running make install ..."
   make install
