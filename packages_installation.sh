@@ -1,8 +1,8 @@
 #!/bin/bash
 
-red='\033[0;31m'
-noc='\033[0m'
 option=-1
+red='\e[31m'
+noc='\e[0m'
 
 print_usage() {
   cat <<EOF
