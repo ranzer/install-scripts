@@ -116,7 +116,7 @@ install_nginx_without_yum() {
     echo '  Unpacked archive.'
     if [ $? -ne 0 ]
     then
-      echo ' ${red}The archive $nginxArchive is not valid.${noc}'
+      echo -e " ${red}The archive $nginxArchive is not valid.${noc}"
     else
       cd $nginxFolder
       echo '  Running configure script ...'
@@ -126,13 +126,13 @@ install_nginx_without_yum() {
       make
       if [ $? -ne 0 ]
       then
-        echo '  ${red}make command failed.${noc}'
+        echo -e "  ${red}make command failed.${noc}"
       else
         echo '  Running make install command ...'
         sudo make install 
         if [ $? -ne 0 ]
         then
-          echo "  ${red}make install command failed.${noc}"
+          echo -e "  ${red}make install command failed.${noc}"
         fi
       fi
     fi
