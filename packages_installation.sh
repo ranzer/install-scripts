@@ -18,6 +18,8 @@ Choose one of the options:
   9. Secure MySQL installation
  10. Install node.js
  11. Install npm
+ 12. Install RVM
+ 13. Install Redmine
 EOF
 }
 
@@ -61,6 +63,10 @@ install() {
       install_nodejs;;
    11)
       install_npm;;
+   12)
+      install_rvm;;
+   13)
+      install_redmine;;
   esac
 }
 
@@ -218,7 +224,7 @@ install_nodejs() {
       if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove npm installation.${noc}"; fi
       echo "  npm uninstall completed."
     fi
-  fi
+fi
   nodeInstallDir=`readlink -f ~/node-v$ver-install`
   echo "Installing node.js version $ver"
   echo "Creating $localDir and $nodeInstallDir directories ..."
@@ -228,7 +234,7 @@ install_nodejs() {
   fi
   if [ -d $nodeInstallDir ]; then
     rm -f -d -r -v $nodeInstallDir
-  fi
+fi
   mkdir $nodeInstallDir
   cd $nodeInstallDir
   echo "  Downloading archive nodejs.org repository ..."
@@ -257,6 +263,30 @@ function install_npm() {
   echo "  Installing npm ..."
   . install.sh
   echo "  Completed."
+}
+
+function install_rvm() {
+  echo "Installing Ruby Version Manager ..."
+  echo "  Installing gpg public key ..."
+  curl -sSL https://rvm.io/mpapis.asc | gpg --import - || { echo -e "  ${red}Failed to install_redminell gpg public key.${noc} Installation aborted."; exit 1; }
+  echo "  Completed."
+  echo "  Downloading and executing RVM stable installation script ..."
+  curl -sSL https://get.rvm.io | bash -s stable || { echo -e "  ${red}Failed to download or execute RVM installation script.${noc} Installation aborted."; exit 1; }
+  echo "  RVM downloading and executing completed."
+  echo "  Loading RVM ..."
+  source ~/.profile || { echo "  Failed to load RVM." }
+  echo "RVM installation completed."
+}
+
+function install_redmine() {
+  echo "Installing redmine ..."
+  echo "  Installing prerequisites ..."
+  sudo yum install zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel
+  if [ !$? -ne 0 ]; then
+    echo -e "${red}  Prerequisites installation failed.${noc}"
+    exit 1
+  fi
+  
 }
 
 print_usage
