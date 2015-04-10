@@ -91,6 +91,12 @@ install() {
    12)
       install_rvm;;
    13)
+     install_ruby;;
+   14)
+     install_rubygems;;
+   15)
+     install_rails;;
+   16)
       install_redmine;;
   esac
 }
