@@ -141,35 +141,35 @@ install_nginx_without_yum() {
   nginxVersion = '1.7.7'
   nginxArchive = 'nginx-$nginxVersion.tar.gz'
   nginxFolder = 'nginx-$nginxVersion'
-  echo 'Installing Nginx without yum ...'
+  print 'Installing Nginx without yum ...'
   install_nginx_prerequisites
   if [ $? -eq 0 ]
   then
-    echo '  Downloading Nginx archive ...'
+    print '  Downloading Nginx archive ...'
     curl -# -O 'http://nginx.org/download/$nginxArchive'
-    echo '  Nginx archive downloaded.'
-    echo '  Unpacking archive ...'
+    print '  Nginx archive downloaded.'
+    print '  Unpacking archive ...'
     tar -xvzf $nginxArchive &> /dev/null
-    echo '  Unpacked archive.'
+    print '  Unpacked archive.'
     if [ $? -ne 0 ]
     then
-      echo -e " ${red}The archive $nginxArchive is not valid.${noc}"
+      print " ${red}The archive $nginxArchive is not valid.${noc}"
     else
       cd $nginxFolder
-      echo '  Running configure script ...'
+      print '  Running configure script ...'
       ./configure --user=nginx --group=nginx --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-http_ssl_module --with-pcre
-      echo '  Configure script executed.'
-      echo '  Running make command ...'
+      print '  Configure script executed.'
+      print '  Running make command ...'
       make
       if [ $? -ne 0 ]
       then
-        echo -e "  ${red}make command failed.${noc}"
+        print "  ${red}make command failed.${noc}"
       else
-        echo '  Running make install command ...'
+        print '  Running make install command ...'
         sudo make install 
         if [ $? -ne 0 ]
         then
-          echo -e "  ${red}make install command failed.${noc}"
+          print "  ${red}make install command failed.${noc}"
         fi
       fi
     fi
