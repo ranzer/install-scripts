@@ -119,22 +119,22 @@ install_nginx_using_yum() {
 }
 
 install_nginx_prerequisites() {
-  echo '  Installing prerequisites ...'
+  print '  Installing prerequisites ...'
   packages=('gcc' 'gcc-c++' 'make' 'zlib-devel' 'pcre-devel' 'openssl-devel')
   for value in ${packages[*]}
   do
-    echo "    Installing $value ..."
+    print "    Installing $value ..."
     sudo yum -q -e 0 install $value 2> /dev/null
     if [ $? -eq 0 ]
     then
-      echo "    Package $value installed successfully."
+      print "    Package $value installed successfully."
     else
-      echo -e "${red}    Package $value install fail.${noc}"
-      echo '    Nginx prerequisites install aborted.'
+      print "${red}    Package $value install fail.${noc}"
+      print '    Nginx prerequisites install aborted.'
       exit 1
     fi
   done
-  echo 'Nginx prerequisites installed completed.'
+  print 'Nginx prerequisites installed completed.'
 }
 
 install_nginx_without_yum() {
