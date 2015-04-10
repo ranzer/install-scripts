@@ -5,7 +5,7 @@ red='\e[31m'
 noc='\e[0m'
 
 print_usage() {
-  cat <<EOF
+  cat >&3 <<EOF
 Choose one of the options:
   1. Install Nginx using yum
   2. Install Nginx without yum
@@ -19,7 +19,10 @@ Choose one of the options:
  10. Install node.js
  11. Install npm
  12. Install RVM
- 13. Install Redmine
+ 13. Install Ruby
+ 14. Install RubyGems
+ 15. Install Rails
+ 16. Install Redmine
 EOF
 }
 
