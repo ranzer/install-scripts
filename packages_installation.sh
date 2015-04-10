@@ -177,50 +177,50 @@ install_nginx_without_yum() {
 }
 
 install_php() {
-  echo "Installing PHP 5.6 ..."
-  echo "  Adding yum repositories ..."
+  print "Installing PHP 5.6 ..."
+  print "  Adding yum repositories ..."
   sudo rpm -Uvh https://mirror.webtatic.com/yum/el7/epel-release.rpm
   sudo rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-  echo "  yum repositories added."
-  echo "  Installing yum packages ..."
+  print "  yum repositories added."
+  print "  Installing yum packages ..."
   sudo yum -y install php56w php56w-devel php56w-mysql php56w-fpm php56w-phpdbg
-  echo "  Packages installed."
-  echo "  Modifying /etc/php-fpm.d/www.conf file ..."
+  print "  Packages installed."
+  print "  Modifying /etc/php-fpm.d/www.conf file ..."
   sudo sed 's/listen.\+/listen = \/var\/run\/php-fpm\/php-fpm.sock/' /etc/php-fpm.d/www.conf
-  echo "    Changed the 'listen' parameter."
-  echo "  Restarting php-fpm service ..."
+  print "    Changed the 'listen' parameter."
+  print "  Restarting php-fpm service ..."
   sudo systemctl restart php-fpm
-  echo "  The php-fpm service restarted."
-  echo "  Enabling php-fpm service to start on boot ..."
+  print "  The php-fpm service restarted."
+  print "  Enabling php-fpm service to start on boot ..."
   sudo systemctl enable php-fpm.service
-  echo "  The php-fpm service enabled to start on boot."
+  print "  The php-fpm service enabled to start on boot."
 }
 
 install_mariadb() {
-  echo "Installing MariaDB database ..."
+  print "Installing MariaDB database ..."
   sudo yum -y install mariadb-server mariadb
-  echo "MariaDB database installed."
-  echo "Enabling MariaDB service to start when system boots ..."
+  print "MariaDB database installed."
+  print "Enabling MariaDB service to start when system boots ..."
   sudo chkconfig mysql on
-  echo "MariaDB service auto start enabled."
-  echo "Starting MariaDB ..."
+  print "MariaDB service auto start enabled."
+  print "Starting MariaDB ..."
   sudo /etc/init.d/mysql start
-  echo "MariaDB started."
+  print "MariaDB started."
 }
 
 secure_mariadb() {
- echo "Securing MariaDB installation ..."
+ print "Securing MariaDB installation ..."
  sh mysql_secure_installation
- echo "MariaDB installation secured."
+ print "MariaDB installation secured."
 }
 
 secure_php() {
-  echo "Securing PHP installation ..."
-  echo "  Modifying /etc/php.ini file ..."
+  print "Securing PHP installation ..."
+  print "  Modifying /etc/php.ini file ..."
   sudo sed -i 's/;\{0,1\}cgi.fix_pathinfo[ ]*=[ ]*[01]/cgi.fix_pathinfo=0/' /etc/php.ini
-  echo "    cgi.fix_pathinfo value changed to 0."
-  echo "  Finished /etc/php.ini file modifications."
-  echo "Finished securing PHP installation."
+  print "    cgi.fix_pathinfo value changed to 0."
+  print "  Finished /etc/php.ini file modifications."
+  print "Finished securing PHP installation."
 }
 
 
