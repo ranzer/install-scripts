@@ -26,19 +26,41 @@ Choose one of the options:
 EOF
 }
 
+tonl() {
+  exec 3>&1
+  exec 4>&2
+  exec 1>install.log
+  exec 2>errors.log
+}
+
+tofl() {
+  exec 1>&3
+  exec 2>&4
+  exec 3>&-
+  exec 4>&-
+}
+
+print() {
+  if [ "$1" ]
+  then
+    echo -e $1>&3
+  fi
+}
+
 read_option() {
-  read -p "Enter option: " option
+  print "Enter option: "
+  read option
 }
 
 create_directory() {
-  echo "Checking if '$1' directory exists ..."
+  print "Checking if '$1' directory exists ..."
   if [ -d $1 ]
   then
-    echo "The directory '$1' exists."
+    print "The directory '$1' exists."
   else
-    echo "The directory '$1' doesn't exist, creating it ..."
+    print "The directory '$1' doesn't exist, creating it ..."
     sudo mkdir $1
-    echo "The directory '$1' created."
+    print "The directory '$1' created."
   fi
 }
 
