@@ -225,66 +225,67 @@ secure_php() {
 
 
 install_nodejs() {
-  read -p "Enter node.js version you wish to install: " ver
+  print "Enter node.js version you wish to install: "
+  read ver
   localDir=`readlink -f ~/.local`
   nodePath=`which node`
   if [ $? -eq 0 ]
   then
     currentVersion=`node -v`
     nodeInstallDir=`readlink -f ~/node-$currentVersion-install`
-    echo "  Uninstalling previous version of node.js ..."
-    if [ ! -d $localDir ]; then echo -e "  ${red}There is no $localDir folder, aborting node uninstall.${noc}"; fi
-    if [ ! -d $nodeInstallDir ]; then echo -e "  ${red}There is no $nodeInstallDir folder, aborting node uninstall.${noc}"; fi
+    print "  Uninstalling previous version of node.js ..."
+    if [ ! -d $localDir ]; then print "  ${red}There is no $localDir folder, aborting node uninstall.${noc}"; fi
+    if [ ! -d $nodeInstallDir ]; then print "  ${red}There is no $nodeInstallDir folder, aborting node uninstall.${noc}"; fi
     cd $nodeInstallDir
     ./configure --prefix=$localDir
     make uninstall
-    if [ $? -ne 0 ]; then echo -e "  ${red}Make uninstall failed.${noc}"; fi
+    if [ $? -ne 0 ]; then print "  ${red}Make uninstall failed.${noc}"; fi
     if [ -f $nodePath ]
     then
       rm $nodePath
-      if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove $nodePath.${noc}"; fi
-    fi
-    echo "  node.js uninstall completed."
+      if [ $? -ne 0 ]; then print "  ${red}Failed to remove $nodePath.${noc}"; fi
+  fi
+    print "  node.js uninstall completed."
     npmPath=`which npmPath`
     if [ $? -eq 0 ]
     then
-      echo "  Uninstalling npm ..."
+      print "  Uninstalling npm ..."
       rm $npmPath
-      if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove npm link.${noc}"; fi
+      if [ $? -ne 0 ]; then print "  ${red}Failed to remove npm link.${noc}"; fi
       rm -R $localDir/lib/node_modules/npm
-      if [ $? -ne 0 ]; then echo -e "  ${red}Failed to remove npm installation.${noc}"; fi
-      echo "  npm uninstall completed."
+      if [ $? -ne 0 ]; then print "  ${red}Failed to remove npm installation.${noc}"; fi
+      print "  npm uninstall completed."
     fi
-fi
+  fi
   nodeInstallDir=`readlink -f ~/node-v$ver-install`
-  echo "Installing node.js version $ver"
-  echo "Creating $localDir and $nodeInstallDir directories ..."
+  print "Installing node.js version $ver"
+  print "Creating $localDir and $nodeInstallDir directories ..."
   if [ ! -d $localDir ]; then
     mkdir $localDir
     cd $localDir
   fi
   if [ -d $nodeInstallDir ]; then
     rm -f -d -r -v $nodeInstallDir
-fi
+  fi
   mkdir $nodeInstallDir
   cd $nodeInstallDir
-  echo "  Downloading archive nodejs.org repository ..."
+  print "  Downloading archive nodejs.org repository ..."
   cmd="curl -# -O http://nodejs.org/dist/v$ver/node-v$ver.tar.gz"
   eval $cmd
   if [ $? -ne 0 ]; then
-    echo -e "  ${red}Couldn't download node.js installation.${noc}"
+    print "  ${red}Couldn't download node.js installation.${noc}"
     exit 1
   fi
-  echo "  Download complete."
-  echo "  Unpacking archive ..."
+  print "  Download complete."
+  print "  Unpacking archive ..."
   tar --strip-components=1 -xzf node-v$ver.tar.gz
-  echo "  Completed."
-  echo "  Running configure script ..."
+  print "  Completed."
+  print "  Running configure script ..."
   ./configure --prefix=`readlink -e ~/.local`
-  echo "  Completed."
-  echo "  Running make install ..."
+  print "  Completed."
+  print "  Running make install ..."
   make install
-  echo "  Completed."
+  print "  Completed."
 }
 
 function install_npm() {
