@@ -104,15 +104,15 @@ install() {
 install_nginx_using_yum() {
  if [ -f /usr/sbin/nginx ]
  then
-   echo "Nginx is already installed."
+   print "Nginx is already installed."
  else
-   echo "Installing nginx ..."
+   print "Installing nginx ..."
    sudo yum -y install nginx
-   echo "Nginx is installed."
-   echo "Enabling Nginx service to start when system boots ..."
+   print "Nginx is installed."
+   print "Enabling Nginx service to start when system boots ..."
    sudo systemctl enable nginx.service
-   echo "Nginx service auto start enabled."
-   echo "Checking if 'sites-available' and 'sites-enabled' directories exists ..."
+   print "Nginx service auto start enabled."
+   print "Checking if 'sites-available' and 'sites-enabled' directories exists ..."
    create_directory /etc/nginx/sites-available
    create_directory /etc/nginx/sites-enabled
  fi
