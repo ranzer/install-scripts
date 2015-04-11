@@ -288,13 +288,13 @@ install_nodejs() {
   print "  Completed."
 }
 
-function install_npm() {
-  echo "  Downloading npm install script ..."
+install_npm() {
+  print "  Downloading npm install script ..."
   curl -# -O -L https://www.npmjs.org/install.sh
-  echo "  Completed."
-  echo "  Installing npm ..."
+  print "  Completed."
+  print "  Installing npm ..."
   . install.sh
-  echo "  Completed."
+  print "  Completed."
 }
 
 function install_rvm() {
