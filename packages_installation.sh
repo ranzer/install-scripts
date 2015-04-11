@@ -327,6 +327,17 @@ install_ruby() {
   print "Completed."
 }
 
+install_rubygems() {
+  print "Installing RubyGems ..."
+  print "  Searching for the Ruby Version Manager ..."
+  which rvm &> /dev/null || { print "  The Ruby Version Manager doesn't exist. Install the Ruby Version Manager prior installing Ruby."; exit 1; }
+  print "  Completed."
+  print "  Installing the most recent RubyGems ..."
+  rvm rubygems current || { print "  ${red}Failed to install RubyGems.${noc}"; exit 1; }
+  print "  Completed."
+  print "Completed."
+}
+
 function install_redmine() {
   echo "Installing redmine ..."
   echo "  Installing prerequisites ..."
