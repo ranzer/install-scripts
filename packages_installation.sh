@@ -310,6 +310,23 @@ install_rvm() {
   print "RVM installation completed."
 }
 
+install_ruby() {
+  print "Installing Ruby ..."
+  print "  Searching for the Ruby Version Manager ..."
+  which rvm &> /dev/null || { print "  The Ruby Version Manager doesn't exist. Install the Ruby Version Manager prior installing Ruby."; exit 1; }
+  print "  Completed."
+  print "  Which Ruby version do you want to install?"
+  read ver
+  print "  Installing Ruby $ver ..."
+  rvm install $ver || { print "  ${red}Failed to install Ruby $ver.${noc}"; exit 1; }
+  print "  Completed."
+  print "  Setting Ruby $ver as default version to be used ..."
+  rvm use $ver --default || { print "  ${red}Failed to set Ruby $ver as default version to be used.${noc}"; exit 1; }
+  print "  Completed."
+  install_rubygems
+  print "Completed."
+}
+
 function install_redmine() {
   echo "Installing redmine ..."
   echo "  Installing prerequisites ..."
