@@ -338,6 +338,19 @@ install_rubygems() {
   print "Completed."
 }
 
+install_rails() {
+  print "Enter Rails version you wish to install"
+  read ver
+  print "Installing Rails"
+  print "  Search for RubyGems ..."
+  which rvm &> /dev/null || { print "  The RubyGems doesn't exist. Install RubyGems prior installing Rails."; exit 1; }
+  print "  Completed."
+  print "  Installing Rails $ver ..."
+  gem install rails -v $ver || { print "  ${red}Failed to install Rails $ver.${noc}"; exit 1; }
+  print "  Completed."
+  print "Completed."
+}
+
 function install_redmine() {
   echo "Installing redmine ..."
   echo "  Installing prerequisites ..."
