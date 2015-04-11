@@ -351,17 +351,20 @@ install_rails() {
   print "Completed."
 }
 
-function install_redmine() {
-  echo "Installing redmine ..."
-  echo "  Installing prerequisites ..."
+install_redmine() {
+  print "Installing redmine ..."
+  print "  Installing prerequisites ..."
   sudo yum install zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel
-  if [ !$? -ne 0 ]; then
-    echo -e "${red}  Prerequisites installation failed.${noc}"
+  if [ $? -ne 0 ]; then
+    print "${red}  Prerequisites installation failed.${noc}"
     exit 1
   fi
-  
 }
 
+trap tofl EXIT
+
+tonl
 print_usage
 read_option
 install
+tofl
