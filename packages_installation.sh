@@ -297,17 +297,17 @@ install_npm() {
   print "  Completed."
 }
 
-function install_rvm() {
-  echo "Installing Ruby Version Manager ..."
-  echo "  Installing gpg public key ..."
-  curl -sSL https://rvm.io/mpapis.asc | gpg --import - || { echo -e "  ${red}Failed to install_redminell gpg public key.${noc} Installation aborted."; exit 1; }
-  echo "  Completed."
-  echo "  Downloading and executing RVM stable installation script ..."
-  curl -sSL https://get.rvm.io | bash -s stable || { echo -e "  ${red}Failed to download or execute RVM installation script.${noc} Installation aborted."; exit 1; }
-  echo "  RVM downloading and executing completed."
-  echo "  Loading RVM ..."
-  source ~/.profile || { echo "  Failed to load RVM." }
-  echo "RVM installation completed."
+install_rvm() {
+  print "Installing Ruby Version Manager ..."
+  print "  Installing gpg public key ..."
+  curl -sSL https://rvm.io/mpapis.asc | gpg --import - || { print "  ${red}Failed to install_redmine gpg public key.${noc} Installation aborted."; exit 1; }
+  print "  Completed."
+  print "  Downloading and executing RVM stable installation script ..."
+  curl -sSL https://get.rvm.io | bash -s stable || { print "  ${red}Failed to download or execute RVM installation script.${noc} Installation aborted."; exit 1; }
+  print "  RVM downloading and executing completed."
+  print "  Loading RVM ..."
+  source ~/.profile || { print "  Failed to load RVM."; }
+  print "RVM installation completed."
 }
 
 function install_redmine() {
