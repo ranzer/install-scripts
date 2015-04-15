@@ -354,11 +354,37 @@ install_rails() {
 install_redmine() {
   print "Installing redmine ..."
   print "  Installing prerequisites ..."
-  sudo yum install zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel
+  sudo yum install -y zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel
   if [ $? -ne 0 ]; then
     print "${red}  Prerequisites installation failed.${noc}"
     exit 1
   fi
+  print "  Which Redmine version do you want to install?"
+  read ver
+  print "  Downloading Redmine archive ..."
+  curl -# -O "http://www.redmine.org/releases/redmine-$ver.tar.gz" || { print "  Failed to download Redmine archive."; exit 1; }
+  print "  Completed."
+  print "  Unpacking archive ..."
+  tar xvzf "redmine-$ver.tar.gz" || { print "  Failed to unpack redmine archive."; exit 1; }
+  print "  Completed."
+  print 
+  which mysql &> /dev/null || { print "  MySQL isn't installed. Installation failed."; exit 1; }
+  print "  Installing redmine database ..."
+  print "    Enter MySQL root password:"
+  read rootPwd
+  print "    Creating redmine database ..."
+  mysql -u root -p$rootPwd -e "create database redmine character set utf8;" || { print "    Failed to created redmine database."; exit 1; }
+  print "    Completed."
+  print "    Creating redmine db user account ..."
+  print "    Enter redmine user password: "
+  read redminePwd
+  mysql -u root -p$rootPwd -e "create user 'redmine'@'localhost' identified ny '$redminePwd';" || { print "    Failed to create redmine db user."; exit 1;}
+  print "    Completed."
+  print "    Granting all privileges to on redmine.* to redmine db user ..."
+  mysql -u root -p$rootPwd -e "grant all privileges on redmine.* to 'redmine'@'localhost';" || { print "   Failed to grant all privileges to redmine user."; exit 1; }
+  print "    Completed."
+  print "  Completed."
+
 }
 
 trap tofl EXIT
