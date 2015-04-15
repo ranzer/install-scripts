@@ -43,7 +43,7 @@ tofl() {
 print() {
   if [ "$1" ]
   then
-    echo -e $1>&3
+    echo -e "$1">&3
   fi
 }
 
