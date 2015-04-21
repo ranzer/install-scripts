@@ -367,7 +367,6 @@ install_redmine() {
   print "  Unpacking archive ..."
   tar xvzf "redmine-$ver.tar.gz" || { print "  Failed to unpack redmine archive."; exit 1; }
   print "  Completed."
-  print 
   which mysql &> /dev/null || { print "  MySQL isn't installed. Installation failed."; exit 1; }
   print "  Installing redmine database ..."
   print "    Enter MySQL root password:"
@@ -378,13 +377,24 @@ install_redmine() {
   print "    Creating redmine db user account ..."
   print "    Enter redmine user password: "
   read redminePwd
-  mysql -u root -p$rootPwd -e "create user 'redmine'@'localhost' identified ny '$redminePwd';" || { print "    Failed to create redmine db user."; exit 1;}
+  mysql -u root -p$rootPwd -e "create user 'redmine'@'localhost' identified by '$redminePwd';" || { print "    Failed to create redmine db user."; exit 1;}
   print "    Completed."
   print "    Granting all privileges to on redmine.* to redmine db user ..."
   mysql -u root -p$rootPwd -e "grant all privileges on redmine.* to 'redmine'@'localhost';" || { print "   Failed to grant all privileges to redmine user."; exit 1; }
   print "    Completed."
   print "  Completed."
-
+  print "  Updating redmine database.yml file ..."
+  print "    Copying database.yml.example to database.yml ..."
+  cd "redmine-$ver/config"
+  cp database.yml.example database.yml || { print "    Failed to copy database.yml.example to database.yml."; exit 1; }
+  print "    Completed."
+  print "    Updating database settings ..."
+  awk -v pwd="$pwd" 'BEGIN { ORS=RS="\n\n" ; OFS=FS="\n" } ; { if ($NF != "") { if ($1 ~ /^production/) { for (i = 1; i <= NF; i++) { if ($i ~ /password/) $i= "  password: " pwd; printf "%s\n", $i } printf "\n" } else print } } }' < database.yml'
+  if [ $? -ne 0 ]; then
+    print "    Failed to update database settings."
+    exit 1
+  fi
+  print "    Completed."
 }
 
 trap tofl EXIT
