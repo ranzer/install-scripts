@@ -352,6 +352,7 @@ install_rails() {
 }
 
 install_redmine() {
+  webServerPublicDir=/usr/share/nginx/html
   print "Installing redmine ..."
   print "  Installing prerequisites ..."
   sudo yum install -y zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel
@@ -411,6 +412,12 @@ install_redmine() {
   print "    Removing database.yml.tmp file ..."
   rm database.yml.tmp || { print "    Failed to remove database.yml.tmp file."; }
   print "    Completed."
+  print "  Completed."
+  print "  Copying redmine-$ver folder to $webServerPublicDir folder ..."
+  sudo cp -R redmine-$ver $webServerPublicDir || { print "  Failed to copy redmine-$ver folder to $webServerPublicDir folder."; exit 1; }
+  print "  Completed."
+  print "  Changing owner of the $webServerPublicDir/redmine-$ver ..."
+  sudo chown -R nginx:nginx $webServerPublicDir/redmine-$ver || { print "  Failed to changed owner of the folder $webServerPublicDir/redmine-$ver."; exit 1; }
   print "  Completed."
 }
 
