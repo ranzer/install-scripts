@@ -388,9 +388,8 @@ install_redmine() {
   print "  Completed."
   print "  Updating redmine database.yml file ..."
   print "    Copying database.yml.example to database.yml ..."
-  cd "redmine-$ver/config"
   cp database.yml.example database.yml || { print "    Failed to copy database.yml.example to database.yml."; exit 1; }
-  print "    Completed."i
+  print "    Completed."
   print "    Updating database settings ..."
   awk -v pwd="$rootPwd" 'BEGIN { ORS=RS="\n\n" ; OFS=FS="\n" } ; {\
     if ($NF != "") {\
@@ -401,7 +400,7 @@ install_redmine() {
         printf "\n"\
       } else print\
     }\
-  }}' < database.yml.examples > database.yml.tmp
+  }' < database.yml.example > database.yml.tmp
   if [ $? -ne 0 ]; then
     print "    Failed to update database settings."
     exit 1
