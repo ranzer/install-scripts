@@ -360,6 +360,9 @@ install_redmine() {
     print "${red}  Prerequisites installation failed.${noc}"
     exit 1
   fi
+  print "  Installing bundler ..."
+  gem install bundler || { print "  Failed to install bundler."; exit 1; }
+  print "  Completed."
   print "  Which Redmine version do you want to install?"
   read ver
   print "  Downloading Redmine archive ..."
