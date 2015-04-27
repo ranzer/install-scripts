@@ -97,7 +97,7 @@ install() {
    15)
      install_rails;;
    16)
-      install_redmine;;
+     install_redmine;;
   esac
 }
 
@@ -415,6 +415,21 @@ install_redmine() {
   print "    Removing database.yml.tmp file ..."
   rm database.yml.tmp || { print "    Failed to remove database.yml.tmp file."; }
   print "    Completed."
+  print "  Completed."
+  print "  Installing ImageMagick ..."
+  sudo yum install ImageMagick ImageMagick-devel || { print "  Failed to install ImageMagick."; exit 1; }
+  print "  Completed."
+  print "  Installing redmine's required Ruby gems ..."
+  bundler install || {  print "  Failed to install redmine's required Ruby gems."; exit 1; }
+  print "  Completed."
+  print "  Ganerate secret token ..."
+  rake generate_secret_token || { print "  Failed to generate secret token."; exit 1; }
+  print "  Completed."
+  print "  "Migrating the database model ...""
+  RAILS_ENV=production rake db:migrate || { print "  Failed to migrate the database model."; exit 1; }
+  print "  Completed."
+  print "  Loading default data ..."
+  RAILS_ENV=production rake redmine:load_default_data || { print "  Failed to load default data."; exit 1; }
   print "  Completed."
   print "  Copying redmine-$ver folder to $webServerPublicDir folder ..."
   sudo cp -R redmine-$ver $webServerPublicDir || { print "  Failed to copy redmine-$ver folder to $webServerPublicDir folder."; exit 1; }
