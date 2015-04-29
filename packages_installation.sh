@@ -375,6 +375,28 @@ install_redmine() {
   print "  Installing redmine database ..."
   print "    Enter MySQL root password:"
   read rootPwd
+  print "  Checking for existing redmine database ..."
+  redmineScheme=$(mysql -u root -p$rootPwd -e "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'redmine'")
+  if [ ! -z "$redmineScheme" ]; then
+    print "    Removing existing redmine database ..."
+    mysql -u root -p$rootPwd -e "drop database redmine" || { print "   Failed to drop redmine database."; exit 1; }
+    print "    Completed."
+  fi
+  print "  Completed."
+  print "  Checking for existing redmine db user account ..."
+  redmineUser=$(mysql -u root -pR00t. -e "select user from mysql.user where user='redmine'")
+  if [ ! -z $redmineUser ]; then
+    print "      Revoking privileges from redmine db account ... "
+    mysql -u root -p$rootPwd -e "revoke all privileges, grant option from 'redmine'@localhost" || { print "      Failed to revoke redmine privileges."; exit 1; }
+    print "      Completed."
+    print "      Deleting existing redmine db account ..."
+    mysql -u root -p$rootPwd -e "drop user 'redmine'@localhost" || { print "  Failed to delete existing redmine user db account."; exit 1; }
+    print "      Completed."
+    print "      Flashing privileges ..."
+    mysql -u root -p$rootPwd -e "flush privileges"
+    pritn "      Completed."
+  fi
+  print "  Completed."
   print "    Creating redmine database ..."
   mysql -u root -p$rootPwd -e "create database redmine character set utf8;" || { print "    Failed to created redmine database."; exit 1; }
   print "    Completed."
@@ -430,12 +452,6 @@ install_redmine() {
   print "  Completed."
   print "  Loading default data ..."
   RAILS_ENV=production rake redmine:load_default_data || { print "  Failed to load default data."; exit 1; }
-  print "  Completed."
-  print "  Copying redmine-$ver folder to $webServerPublicDir folder ..."
-  sudo cp -R redmine-$ver $webServerPublicDir || { print "  Failed to copy redmine-$ver folder to $webServerPublicDir folder."; exit 1; }
-  print "  Completed."
-  print "  Changing owner of the $webServerPublicDir/redmine-$ver ..."
-  sudo chown -R nginx:nginx $webServerPublicDir/redmine-$ver || { print "  Failed to changed owner of the folder $webServerPublicDir/redmine-$ver."; exit 1; }
   print "  Completed."
 }
 
