@@ -145,9 +145,9 @@ install_nginx_prerequisites() {
 }
 
 install_nginx_without_yum() {
-  nginxVersion = '1.7.7'
-  nginxArchive = 'nginx-$nginxVersion.tar.gz'
-  nginxFolder = 'nginx-$nginxVersion'
+  nginxVersion='1.7.7'
+  nginxArchive='nginx-$nginxVersion.tar.gz'
+  nginxFolder='nginx-$nginxVersion'
   print 'Installing Nginx without yum ...'
   install_nginx_prerequisites
   if [ $? -eq 0 ]
