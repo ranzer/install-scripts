@@ -43,7 +43,14 @@ tofl() {
 print() {
   if [ "$1" ]
   then
-    echo -e "$1">&3
+    local text="$1"
+    if [ "$2" ]
+    then
+      case "$1" in
+        -e) text="${red}$2${noc}"
+      esac
+    fi
+    echo -e "$text">&3
   fi
 }
 
@@ -129,7 +136,7 @@ install_nginx_prerequisites() {
     then
       print "    Package $value installed successfully."
     else
-      print "${red}    Package $value install fail.${noc}"
+      print -e "    Package $value install fail."
       print '    Nginx prerequisites install aborted.'
       exit 1
     fi
@@ -153,7 +160,7 @@ install_nginx_without_yum() {
     print '  Unpacked archive.'
     if [ $? -ne 0 ]
     then
-      print " ${red}The archive $nginxArchive is not valid.${noc}"
+      print -e " The archive $nginxArchive is not valid."
     else
       cd $nginxFolder
       print '  Running configure script ...'
@@ -163,13 +170,13 @@ install_nginx_without_yum() {
       make
       if [ $? -ne 0 ]
       then
-        print "  ${red}make command failed.${noc}"
+        print "  make command failed."
       else
         print '  Running make install command ...'
         sudo make install 
         if [ $? -ne 0 ]
         then
-          print "  ${red}make install command failed.${noc}"
+          print -e "  make install command failed."
         fi
       fi
     fi
@@ -234,16 +241,16 @@ install_nodejs() {
     currentVersion=`node -v`
     nodeInstallDir=`readlink -f ~/node-$currentVersion-install`
     print "  Uninstalling previous version of node.js ..."
-    if [ ! -d $localDir ]; then print "  ${red}There is no $localDir folder, aborting node uninstall.${noc}"; fi
-    if [ ! -d $nodeInstallDir ]; then print "  ${red}There is no $nodeInstallDir folder, aborting node uninstall.${noc}"; fi
+    if [ ! -d $localDir ]; then print -e "  There is no $localDir folder, aborting node uninstall."; fi
+    if [ ! -d $nodeInstallDir ]; then print -e "  There is no $nodeInstallDir folder, aborting node uninstall."; fi
     cd $nodeInstallDir
     ./configure --prefix=$localDir
     make uninstall
-    if [ $? -ne 0 ]; then print "  ${red}Make uninstall failed.${noc}"; fi
+    if [ $? -ne 0 ]; then print -e "  Make uninstall failed."; fi
     if [ -f $nodePath ]
     then
       rm $nodePath
-      if [ $? -ne 0 ]; then print "  ${red}Failed to remove $nodePath.${noc}"; fi
+      if [ $? -ne 0 ]; then print -e "  Failed to remove $nodePath."; fi
   fi
     print "  node.js uninstall completed."
     npmPath=`which npmPath`
@@ -251,9 +258,9 @@ install_nodejs() {
     then
       print "  Uninstalling npm ..."
       rm $npmPath
-      if [ $? -ne 0 ]; then print "  ${red}Failed to remove npm link.${noc}"; fi
+      if [ $? -ne 0 ]; then print -e "  Failed to remove npm link."; fi
       rm -R $localDir/lib/node_modules/npm
-      if [ $? -ne 0 ]; then print "  ${red}Failed to remove npm installation.${noc}"; fi
+      if [ $? -ne 0 ]; then print -e "  Failed to remove npm installation."; fi
       print "  npm uninstall completed."
     fi
   fi
@@ -300,28 +307,28 @@ install_npm() {
 install_rvm() {
   print "Installing Ruby Version Manager ..."
   print "  Installing gpg public key ..."
-  curl -sSL https://rvm.io/mpapis.asc | gpg --import - || { print "  ${red}Failed to install_redmine gpg public key.${noc} Installation aborted."; exit 1; }
+  curl -sSL https://rvm.io/mpapis.asc | gpg --import - || { print -e "  Failed to install_redmine gpg public key. Installation aborted."; exit 1; }
   print "  Completed."
   print "  Downloading and executing RVM stable installation script ..."
-  curl -sSL https://get.rvm.io | bash -s stable || { print "  ${red}Failed to download or execute RVM installation script.${noc} Installation aborted."; exit 1; }
+  curl -sSL https://get.rvm.io | bash -s stable || { print -e "  Failed to download or execute RVM installation script.${noc} Installation aborted."; exit 1; }
   print "  RVM downloading and executing completed."
   print "  Loading RVM ..."
-  source ~/.profile || { print "  Failed to load RVM."; }
+  source ~/.profile || { print -e "  Failed to load RVM."; }
   print "RVM installation completed."
 }
 
 install_ruby() {
   print "Installing Ruby ..."
   print "  Searching for the Ruby Version Manager ..."
-  which rvm &> /dev/null || { print "  The Ruby Version Manager doesn't exist. Install the Ruby Version Manager prior installing Ruby."; exit 1; }
+  which rvm &> /dev/null || { print -e "  The Ruby Version Manager doesn't exist. Install the Ruby Version Manager prior installing Ruby."; exit 1; }
   print "  Completed."
   print "  Which Ruby version do you want to install?"
   read ver
   print "  Installing Ruby $ver ..."
-  rvm install $ver || { print "  ${red}Failed to install Ruby $ver.${noc}"; exit 1; }
+  rvm install $ver || { print -e "  Failed to install Ruby $ver."; exit 1; }
   print "  Completed."
   print "  Setting Ruby $ver as default version to be used ..."
-  rvm use $ver --default || { print "  ${red}Failed to set Ruby $ver as default version to be used.${noc}"; exit 1; }
+  rvm use $ver --default || { print -e "  Failed to set Ruby $ver as default version to be used."; exit 1; }
   print "  Completed."
   install_rubygems
   print "Completed."
@@ -330,10 +337,10 @@ install_ruby() {
 install_rubygems() {
   print "Installing RubyGems ..."
   print "  Searching for the Ruby Version Manager ..."
-  which rvm &> /dev/null || { print "  The Ruby Version Manager doesn't exist. Install the Ruby Version Manager prior installing Ruby."; exit 1; }
+  which rvm &> /dev/null || { print -e "  The Ruby Version Manager doesn't exist. Install the Ruby Version Manager prior installing Ruby."; exit 1; }
   print "  Completed."
   print "  Installing the most recent RubyGems ..."
-  rvm rubygems current || { print "  ${red}Failed to install RubyGems.${noc}"; exit 1; }
+  rvm rubygems current || { print -e "  Failed to install RubyGems."; exit 1; }
   print "  Completed."
   print "Completed."
 }
@@ -343,10 +350,10 @@ install_rails() {
   read ver
   print "Installing Rails"
   print "  Search for RubyGems ..."
-  which rvm &> /dev/null || { print "  The RubyGems doesn't exist. Install RubyGems prior installing Rails."; exit 1; }
+  which rvm &> /dev/null || { print -e "  The RubyGems doesn't exist. Install RubyGems prior installing Rails."; exit 1; }
   print "  Completed."
   print "  Installing Rails $ver ..."
-  gem install rails -v $ver || { print "  ${red}Failed to install Rails $ver.${noc}"; exit 1; }
+  gem install rails -v $ver || { print -e "  Failed to install Rails $ver."; exit 1; }
   print "  Completed."
   print "Completed."
 }
@@ -357,42 +364,64 @@ install_redmine() {
   print "  Installing prerequisites ..."
   sudo yum install -y zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel
   if [ $? -ne 0 ]; then
-    print "${red}  Prerequisites installation failed.${noc}"
+    print -e "  Prerequisites installation failed."
     exit 1
   fi
   print "  Installing bundler ..."
-  gem install bundler || { print "  Failed to install bundler."; exit 1; }
+  gem install bundler || { print -e "  Failed to install bundler."; exit 1; }
   print "  Completed."
   print "  Which Redmine version do you want to install?"
   read ver
   print "  Downloading Redmine archive ..."
-  curl -# -O "http://www.redmine.org/releases/redmine-$ver.tar.gz" || { print "  Failed to download Redmine archive."; exit 1; }
+  curl -# -O "http://www.redmine.org/releases/redmine-$ver.tar.gz" || { print -e "  Failed to download Redmine archive."; exit 1; }
   print "  Completed."
   print "  Unpacking archive ..."
-  tar xvzf "redmine-$ver.tar.gz" || { print "  Failed to unpack redmine archive."; exit 1; }
+  tar xvzf "redmine-$ver.tar.gz" || { print -e "  Failed to unpack redmine archive."; exit 1; }
   print "  Completed."
-  which mysql &> /dev/null || { print "  MySQL isn't installed. Installation failed."; exit 1; }
+  which mysql &> /dev/null || { print -e "  MySQL isn't installed. Installation failed."; exit 1; }
   print "  Installing redmine database ..."
   print "    Enter MySQL root password:"
   read rootPwd
+  print "  Checking for existing redmine database ..."
+  redmineScheme=$(mysql -u root -p$rootPwd -e "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'redmine'")
+  if [ ! -z "$redmineScheme" ]; then
+    print "    Removing existing redmine database ..."
+    mysql -u root -p$rootPwd -e "drop database redmine" || { print -e "   Failed to drop redmine database."; exit 1; }
+    print "    Completed."
+  fi
+  print "  Completed."
+  print "  Checking for existing redmine db user account ..."
+  redmineUser=$(mysql -u root -p$rootPwd -e "select user from mysql.user where user='redmine'")
+  if [ ! -z "$redmineUser" ]; then
+    print "      Revoking privileges from redmine db account ... "
+    mysql -u root -p$rootPwd -e "revoke all privileges, grant option from 'redmine'@localhost" || { print -e "      Failed to revoke redmine privileges."; exit 1; }
+    print "      Completed."
+    print "      Deleting existing redmine db account ..."
+    mysql -u root -p$rootPwd -e "drop user 'redmine'@localhost" || { print -e "  Failed to delete existing redmine user db account."; exit 1; }
+    print "      Completed."
+    print "      Flashing privileges ..."
+    mysql -u root -p$rootPwd -e "flush privileges"
+    print "      Completed."
+  fi
+  print "  Completed."
   print "    Creating redmine database ..."
-  mysql -u root -p$rootPwd -e "create database redmine character set utf8;" || { print "    Failed to created redmine database."; exit 1; }
+  mysql -u root -p$rootPwd -e "create database redmine character set utf8;" || { print -e "    Failed to created redmine database."; exit 1; }
   print "    Completed."
   print "    Creating redmine db user account ..."
   print "    Enter redmine user password: "
   read redminePwd
-  mysql -u root -p$rootPwd -e "create user 'redmine'@'localhost' identified by '$redminePwd';" || { print "    Failed to create redmine db user."; exit 1;}
+  mysql -u root -p$rootPwd -e "create user 'redmine'@'localhost' identified by '$redminePwd';" || { print -e "    Failed to create redmine db user."; exit 1;}
   print "    Completed."
   print "    Granting all privileges to on redmine.* to redmine db user ..."
-  mysql -u root -p$rootPwd -e "grant all privileges on redmine.* to 'redmine'@'localhost';" || { print "   Failed to grant all privileges to redmine user."; exit 1; }
+  mysql -u root -p$rootPwd -e "grant all privileges on redmine.* to 'redmine'@'localhost';" || { print -e "   Failed to grant all privileges to redmine user."; exit 1; }
   print "    Completed."
   print "  Completed."
   print "  Moving to redmine-$ver/config folder ..."
-  cd redmine-$ver/config || { print "  Failed to changed current directory to redmine-$ver/config."; exit 1; }
+  cd redmine-$ver/config || { print -e "  Failed to changed current directory to redmine-$ver/config."; exit 1; }
   print "  Completed."
   print "  Updating redmine database.yml file ..."
   print "    Copying database.yml.example to database.yml ..."
-  cp database.yml.example database.yml || { print "    Failed to copy database.yml.example to database.yml."; exit 1; }
+  cp database.yml.example database.yml || { print -e "    Failed to copy database.yml.example to database.yml."; exit 1; }
   print "    Completed."
   print "    Updating database settings ..."
   awk -v pwd="$rootPwd" 'BEGIN { ORS=RS="\n\n" ; OFS=FS="\n" } ; {\
@@ -406,36 +435,30 @@ install_redmine() {
     }\
   }' < database.yml.example > database.yml.tmp
   if [ $? -ne 0 ]; then
-    print "    Failed to update database settings."
+    print -e "    Failed to update database settings."
     exit 1
   fi
   print "    Copying database.yml.tmp to database.yml"
-  cp database.yml.tmp database.yml || { print "    Failed to copy database.yml.tmp to database.yml."; exit 1; }
+  cp database.yml.tmp database.yml || { print -e "    Failed to copy database.yml.tmp to database.yml."; exit 1; }
   print "    Completed."
   print "    Removing database.yml.tmp file ..."
-  rm database.yml.tmp || { print "    Failed to remove database.yml.tmp file."; }
+  rm database.yml.tmp || { print -e "    Failed to remove database.yml.tmp file."; }
   print "    Completed."
   print "  Completed."
   print "  Installing ImageMagick ..."
-  sudo yum install ImageMagick ImageMagick-devel || { print "  Failed to install ImageMagick."; exit 1; }
+  sudo yum install -y ImageMagick ImageMagick-devel || { print -e "  Failed to install ImageMagick."; exit 1; }
   print "  Completed."
   print "  Installing redmine's required Ruby gems ..."
-  bundler install || {  print "  Failed to install redmine's required Ruby gems."; exit 1; }
+  bundler install || {  print -e "  Failed to install redmine's required Ruby gems."; exit 1; }
   print "  Completed."
   print "  Ganerate secret token ..."
-  rake generate_secret_token || { print "  Failed to generate secret token."; exit 1; }
+  rake generate_secret_token || { print -e "  Failed to generate secret token."; exit 1; }
   print "  Completed."
-  print "  "Migrating the database model ...""
-  RAILS_ENV=production rake db:migrate || { print "  Failed to migrate the database model."; exit 1; }
+  print "  Migrating the database model ...
+  RAILS_ENV=production rake db:migrate || { print -e "  Failed to migrate the database model."; exit 1; }
   print "  Completed."
   print "  Loading default data ..."
-  RAILS_ENV=production rake redmine:load_default_data || { print "  Failed to load default data."; exit 1; }
-  print "  Completed."
-  print "  Copying redmine-$ver folder to $webServerPublicDir folder ..."
-  sudo cp -R redmine-$ver $webServerPublicDir || { print "  Failed to copy redmine-$ver folder to $webServerPublicDir folder."; exit 1; }
-  print "  Completed."
-  print "  Changing owner of the $webServerPublicDir/redmine-$ver ..."
-  sudo chown -R nginx:nginx $webServerPublicDir/redmine-$ver || { print "  Failed to changed owner of the folder $webServerPublicDir/redmine-$ver."; exit 1; }
+  RAILS_ENV=production rake redmine:load_default_data || { print -e "  Failed to load default data."; exit 1; }
   print "  Completed."
 }
 
@@ -446,3 +469,4 @@ print_usage
 read_option
 install
 tofl
+
