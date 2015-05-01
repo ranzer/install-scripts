@@ -131,7 +131,7 @@ install_nginx_prerequisites() {
   for value in ${packages[*]}
   do
     print "    Installing $value ..."
-    sudo yum -q -e 0 install $value 2> /dev/null
+    sudo yum -y install $value
     if [ $? -eq 0 ]
     then
       print "    Package $value installed successfully."
@@ -141,19 +141,20 @@ install_nginx_prerequisites() {
       exit 1
     fi
   done
-  print 'Nginx prerequisites installed completed.'
+  print '  Nginx prerequisites installed completed.'
 }
 
 install_nginx_without_yum() {
-  nginxVersion='1.7.7'
-  nginxArchive='nginx-$nginxVersion.tar.gz'
-  nginxFolder='nginx-$nginxVersion'
+  print " Enter nginx version you want to install:"
+  read nginxVersion
+  nginxArchive="nginx-$nginxVersion.tar.gz"
+  nginxFolder="nginx-$nginxVersion"
   print 'Installing Nginx without yum ...'
   install_nginx_prerequisites
   if [ $? -eq 0 ]
   then
     print '  Downloading Nginx archive ...'
-    curl -# -O 'http://nginx.org/download/$nginxArchive'
+    curl -# -O "http://nginx.org/download/$nginxArchive"
     print '  Nginx archive downloaded.'
     print '  Unpacking archive ...'
     tar -xvzf $nginxArchive &> /dev/null
@@ -167,19 +168,13 @@ install_nginx_without_yum() {
       ./configure --user=nginx --group=nginx --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-http_ssl_module --with-pcre
       print '  Configure script executed.'
       print '  Running make command ...'
-      make
-      if [ $? -ne 0 ]
-      then
-        print "  make command failed."
-      else
-        print '  Running make install command ...'
-        sudo make install 
-        if [ $? -ne 0 ]
-        then
-          print -e "  make install command failed."
-        fi
-      fi
+      make || { print -e "  make command failed."; exit 1; }
+      print '  Completed.'
+      print '  Running make install command ...'
+      sudo make install || { print -e "  make install command failed."; exit 1; }
+      print '  Completed.'
     fi
+   print "Completed."
   fi
 }
 
