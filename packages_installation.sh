@@ -454,7 +454,7 @@ install_redmine() {
   print "  Ganerate secret token ..."
   rake generate_secret_token || { print -e "  Failed to generate secret token."; exit 1; }
   print "  Completed."
-  print "  Migrating the database model ...
+  print "  Migrating the database model ..."
   RAILS_ENV=production rake db:migrate || { print -e "  Failed to migrate the database model."; exit 1; }
   print "  Completed."
   print "  Loading default data ..."
