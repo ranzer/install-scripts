@@ -157,15 +157,14 @@ install_nginx_without_yum() {
     curl -# -O "http://nginx.org/download/$nginxArchive"
     print '  Nginx archive downloaded.'
     print '  Unpacking archive ...'
-    tar -xvzf $nginxArchive &> /dev/null
-    print '  Unpacked archive.'
-    if [ $? -ne 0 ]
-    then
-      print -e " The archive $nginxArchive is not valid."
-    else
-      cd $nginxFolder
+    tar -xvzf $nginxArchive &> /dev/null || { print -e "  The archive $nginxArchive is not valid." }
+
+    print '  Completed..'
+    print "  Moving to $nginxFolder ..."
+    cd $nginxFolder || { print -e "  Failed to change working directory to $nginxFolder."; exit 1; }
+    print "  Completed."
       print '  Running configure script ...'
-      ./configure --user=nginx --group=nginx --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-http_ssl_module --with-pcre
+      ./configure --user=nginx --group=nginx --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-http_ssl_module --with-pcre
       print '  Configure script executed.'
       print '  Running make command ...'
       make || { print -e "  make command failed."; exit 1; }
@@ -173,7 +172,7 @@ install_nginx_without_yum() {
       print '  Running make install command ...'
       sudo make install || { print -e "  make install command failed."; exit 1; }
       print '  Completed.'
-    fi
+   fi
    print "Completed."
   fi
 }
