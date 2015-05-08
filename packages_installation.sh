@@ -23,6 +23,7 @@ Choose one of the options:
  14. Install RubyGems
  15. Install Rails
  16. Install Redmine
+ 17. Install Gateone
 EOF
 }
 
@@ -105,6 +106,8 @@ install() {
      install_rails;;
    16)
      install_redmine;;
+   17)
+     install_gateone;;
   esac
 }
 
@@ -123,6 +126,17 @@ install_nginx_using_yum() {
    create_directory /etc/nginx/sites-available
    create_directory /etc/nginx/sites-enabled
  fi
+}
+
+install_packages() {
+  if [ ! -z "$1" ]; then
+    for package in "$@"
+    do
+      print "Installing $package ..."
+      sudo yum -y install $package || { print "Failed to install $package."; return 1; }
+      print "$package installed successfully."
+    done
+  fi
 }
 
 install_nginx_prerequisites() {
@@ -455,6 +469,13 @@ install_redmine() {
   print "  Loading default data ..."
   RAILS_ENV=production rake redmine:load_default_data || { print -e "  Failed to load default data."; exit 1; }
   print "  Completed."
+}
+
+install_gateone() {
+  print "Installing gateone ..."
+  print "  Installing prerequisites ..."
+  packages=("git" "gcc" "python-devel" "httpd")
+  install_packages ${packages[@]} || { print "  Failed to install all prerequisities. Installation aborted."; exit 1; }
 }
 
 trap tofl EXIT
