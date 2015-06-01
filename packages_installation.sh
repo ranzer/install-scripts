@@ -243,6 +243,9 @@ secure_php() {
 install_nodejs() {
   print "Enter node.js version you wish to install: "
   read ver
+  print "  Installing node.js prerequisites ..."
+  sudo yum groupinstall -y "Development Tools" || { print -e "  Failed to install node.js prerequisites. Installation aborted."; exit 1; }
+  print "  Prerequisites installation completed."
   localDir=`readlink -f ~/.local`
   nodePath=`which node`
   if [ $? -eq 0 ]
@@ -305,12 +308,17 @@ install_nodejs() {
 }
 
 install_npm() {
+  print "Installing npm ..."
+  print "  Installing npm prerequisites ..."
+  sudo yum groupinstall -y "Development Tools" || { print -e "  Failed to install npm prerequisites. Installation aborted."; exit 1; }
+  print "  Prerequisites installation completed."
   print "  Downloading npm install script ..."
   curl -# -O -L https://www.npmjs.org/install.sh
   print "  Completed."
-  print "  Installing npm ..."
+  print "  Running npm installation script ..."
   . install.sh
   print "  Completed."
+  print "npm installation completed."
 }
 
 install_rvm() {
