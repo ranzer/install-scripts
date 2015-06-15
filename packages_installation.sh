@@ -24,6 +24,7 @@ Choose one of the options:
  15. Install Rails
  16. Install Redmine
  17. Install Gateone
+ 18. Install Jenkins
 EOF
 }
 
@@ -121,6 +122,8 @@ install() {
      install_redmine;;
    17)
      install_gateone;;
+   18)
+     install_jenkins;;
   esac
 }
 
@@ -184,14 +187,15 @@ install_nginx_without_yum() {
     curl -# -O "http://nginx.org/download/$nginxArchive"
     print '  Nginx archive downloaded.'
     print '  Unpacking archive ...'
-    tar -xvzf $nginxArchive &> /dev/null || { print -e "  The archive $nginxArchive is not valid." }
-
-    print '  Completed..'
-    print "  Moving to $nginxFolder ..."
-    cd $nginxFolder || { print -e "  Failed to change working directory to $nginxFolder."; exit 1; }
-    print "  Completed."
+    tar -xvzf $nginxArchive &> /dev/null
+    print '  Unpacked archive.'
+    if [ $? -ne 0 ]
+    then
+      print -e " The archive $nginxArchive is not valid."
+    else
+      cd $nginxFolder
       print '  Running configure script ...'
-      ./configure --user=nginx --group=nginx --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-http_ssl_module --with-pcre
+      ./configure --user=nginx --group=nginx --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --with-http_ssl_module --with-pcre
       print '  Configure script executed.'
       print '  Running make command ...'
       make || { print -e "  make command failed."; exit 1; }
@@ -199,7 +203,7 @@ install_nginx_without_yum() {
       print '  Running make install command ...'
       sudo make install || { print -e "  make install command failed."; exit 1; }
       print '  Completed.'
-   fi
+    fi
    print "Completed."
   fi
 }
@@ -293,6 +297,7 @@ install_mariadb() {
 }
 
 secure_mariadb() {
+ tofl
  print "Securing MariaDB installation ..."
  sh mysql_secure_installation
  print "MariaDB installation secured."
@@ -552,6 +557,50 @@ install_gateone() {
   print "  Installing prerequisites ..."
   packages=("git" "gcc" "python-devel" "httpd")
   install_packages ${packages[@]} || { print "  Failed to install all prerequisities. Installation aborted."; exit 1; }
+}
+
+install_jenkins() {
+  print "Installing Jenkins ..."
+  yum list installed | grep jenkins > /dev/null
+  if [ $? -eq 0 ]; then
+    print "There is a previous Jenkins installation do you want to remove it (y/n)?" 2
+    local response='y'
+    read response
+    if [ $response -eq 'n' ]; then
+      print "Aborting Jenkins installation."; 
+      exit; 
+    else
+      sudo yum remove jenkins || { print -e "Failed to remove previous Jenkins installation. Installation aborted." 2; }
+    fi
+  fi
+  local jenkinsVersion=-1;
+  print "Jenkins version to install?" 2
+  read $jenkinsVersion
+  print "Checking if Jenkins repo exists ..."
+  readlink -e /etc/yum.repo.d/jenkins.repo > /dev/null
+  if [ $? -ne 0 ]; then
+    print "Jenkins repo does not exist, creating it ..." 2
+    sudo -E curl -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+    if [ $? -ne 0 ]; then
+      print -e "Failed to create Jenkins repo. Installation aborted." 2
+      exit 1
+    fi
+    print "Completed." 2
+    print "Downloading Jenkins repo public key ..." 2
+    local filename="jenkins-ci.org.key"
+    curl -sO "http://pkg.jenkins-ci.org/redhat/$filename" || { print -e "Failed to download Jenkins repo public key. Installation Aborted." 2; exit 1; }
+    print "Completed" 2
+    publicKeyVersion=$(gpg "$filename" | sed -rn 's/^pub\s+[^/]+\/([A-Z0-9]+).*/\1/p')
+    rpm -q gpg-pubkey | grep -iqs "gpg-pubkey-$publicKeykVersion"
+    if [ $? -ne 0 ]; then
+      print "Importing Jenkins public key ..."
+      sudo rpm --import "$filename" || { print -e "Failed to import Jenkins public key. Installation aborted." 2 }
+      print "Completed." 2
+    fi
+    print "Installing Jenkins version $jenkinsVersion ..."
+    sudo yum install "jenkins-$jenkinsVersion" || { print -e "Failed to install Jenkins v$jenkinsVersion." }
+    print "Completed."
+  fi
 }
 
 trap tofl EXIT
