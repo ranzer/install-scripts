@@ -44,14 +44,27 @@ tofl() {
 print() {
   if [ "$1" ]
   then
+    local indentBy=0
     local text="$1"
+    local textSize=${#text}
     if [ "$2" ]
     then
       case "$1" in
-        -e) text="${red}$2${noc}"
+        -e) 
+            text="${red}$2${noc}"
+            textSize=$((${#text} - 2))
+            ;;
+         *) 
+            indentBy=$2
+            ;;
       esac
     fi
-    echo -e "$text">&3
+    if [ "$3" ]
+    then
+      indentBy=$3
+    fi
+    local indentSize=$(($textSize + $indentBy))
+    printf "%${indentSize}b\n" "$text">&3
   fi
 }
 
@@ -211,16 +224,72 @@ install_php() {
   print "  The php-fpm service enabled to start on boot."
 }
 
+create_mariadb_package_name() {
+  if [ ! -z "$1" ] && [ ! -z "$2" ]; then
+    local osname=$(sed -rn 's/^ID="(.*)"/\1/p' /etc/os-release)
+    local osversion=$(sed -rn 's/^VERSION_ID="([0-9]+)"/\1/p' /etc/os-release)
+    local arch=$(arch)
+    if [ ! -z "$3" ]; then
+      arch="$3"
+    fi
+    local packageName="MariaDB-$1-$osname$osversion-$arch-$2"
+  fi
+
+  echo $packageName
+}
+
+create_mariadb_download_link() {
+  if [ ! -z "$1"  ] && [ ! -z "$2" ] && [ ! -z "$3" ]; then
+    local mariadbUrl=http://yum.mariadb.org/
+    local osname=$(sed -rn 's/^ID="(.*)"/\1/p' /etc/os-release)
+    local osversion=$(sed -rn 's/^VERSION_ID="([0-9]+)"/\1/p' /etc/os-release)
+    local url="$mariadbUrl/$1/$osname$osversion-$2/rpms/$3.rpm"
+  fi
+
+  echo $url
+}
+
+install_mariadb_package() {
+  if [ ! -z "$1" ] && [ ! -z "$2" ]; then
+    local mparch=$(arch | sed -nr 's/(.*)_.*/\1/p')
+    local mariadbVersion="$1"
+    local packageName=$(create_mariadb_package_name $mariadbVersion "$2")
+    local url=$(create_mariadb_download_link $mariadbVersion $mparch $packageName)
+    local indentBy=0
+    if [ ! -z "$3" ]; then
+      indentBy="$3"
+    fi
+    print "Checking url $url ..." $indentBy
+    wget -q --spider "$url"
+    if [ $? -ne 0 ]
+    then
+      mparch="amd64"
+      print "Package at url $url doesn't exist." $(($indentBy + 2))
+      url=$(create_mariadb_download_link $mariadbVersion $mparch $packageName)
+      print "Checking url $url ... " $(($indentBy + 2))
+      wget -q --spider "$url" || { print -e "No packages found." $(($indentBy + 2)); exit 1; }
+      print "The url $url is valid." $(($indentBy + 2))
+    else
+      print "The url $url is valid." $(($indentBy + 2))
+    fi
+    print "MariaDB $mariadbVersion installation found." $(($indentBy + 2))
+    print "Check completed." $indentBy
+    print "Downloading $url ..." $indentBy
+    curl -f -# -O "$url" || { print -e "Failed to download $url." $indentBy; exit 1; }
+    print "Completed." $indentBy
+    print "Installing package $packageName ..." $indentBy
+    sudo rpm -ivh "$packageName.rpm" || { print -e "Failed to install client package." $indentBy; exit 1; }
+    print "Completed." $indentBy
+  fi
+}
+
 install_mariadb() {
   print "Installing MariaDB database ..."
-  sudo yum -y install mariadb-server mariadb
-  print "MariaDB database installed."
-  print "Enabling MariaDB service to start when system boots ..."
-  sudo chkconfig mysql on
-  print "MariaDB service auto start enabled."
-  print "Starting MariaDB ..."
-  sudo /etc/init.d/mysql start
-  print "MariaDB started."
+  print "  Enter MariaDB version to install:"
+  read mariadbVersion
+  install_mariadb_package $mariadbVersion "common" 2
+  install_mariadb_package $mariadbVersion "client" 2
+  install_mariadb_package $mariadbVersion "server" 2
 }
 
 secure_mariadb() {
@@ -242,6 +311,9 @@ secure_php() {
 install_nodejs() {
   print "Enter node.js version you wish to install: "
   read ver
+  print "  Installing node.js prerequisites ..."
+  sudo yum groupinstall -y "Development Tools" || { print -e "  Failed to install node.js prerequisites. Installation aborted."; exit 1; }
+  print "  Prerequisites installation completed."
   localDir=`readlink -f ~/.local`
   nodePath=`which node`
   if [ $? -eq 0 ]
@@ -304,12 +376,17 @@ install_nodejs() {
 }
 
 install_npm() {
+  print "Installing npm ..."
+  print "  Installing npm prerequisites ..."
+  sudo yum groupinstall -y "Development Tools" || { print -e "  Failed to install npm prerequisites. Installation aborted."; exit 1; }
+  print "  Prerequisites installation completed."
   print "  Downloading npm install script ..."
   curl -# -O -L https://www.npmjs.org/install.sh
   print "  Completed."
-  print "  Installing npm ..."
+  print "  Running npm installation script ..."
   . install.sh
   print "  Completed."
+  print "npm installation completed."
 }
 
 install_rvm() {
