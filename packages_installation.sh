@@ -594,11 +594,11 @@ install_jenkins() {
     rpm -q gpg-pubkey | grep -iqs "gpg-pubkey-$publicKeykVersion"
     if [ $? -ne 0 ]; then
       print "Importing Jenkins public key ..."
-      sudo rpm --import "$filename" || { print -e "Failed to import Jenkins public key. Installation aborted." 2 }
+      sudo rpm --import "$filename" || { print -e "Failed to import Jenkins public key. Installation aborted." 2; exit 1; }
       print "Completed." 2
     fi
     print "Installing Jenkins version $jenkinsVersion ..."
-    sudo yum install "jenkins-$jenkinsVersion" || { print -e "Failed to install Jenkins v$jenkinsVersion." }
+    sudo yum install "jenkins-$jenkinsVersion" || { print -e "Failed to install Jenkins v$jenkinsVersion."; exit 1; }
     print "Completed."
   fi
 }
