@@ -575,9 +575,9 @@ install_jenkins() {
   fi
   local jenkinsVersion=-1;
   print "Jenkins version to install?" 2
-  read $jenkinsVersion
+  read jenkinsVersion
   print "Checking if Jenkins repo exists ..."
-  readlink -e /etc/yum.repo.d/jenkins.repo > /dev/null
+  readlink -e /etc/yum.repos.d/jenkins.repo > /dev/null
   if [ $? -ne 0 ]; then
     print "Jenkins repo does not exist, creating it ..." 2
     sudo -E curl -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
@@ -598,7 +598,7 @@ install_jenkins() {
       print "Completed." 2
     fi
     print "Installing Jenkins version $jenkinsVersion ..."
-    sudo yum install "jenkins-$jenkinsVersion" || { print -e "Failed to install Jenkins v$jenkinsVersion."; exit 1; }
+    sudo yum install -y "jenkins-$jenkinsVersion" || { print -e "Failed to install Jenkins v$jenkinsVersion."; exit 1; }
     print "Completed."
   fi
 }
